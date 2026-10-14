@@ -1,0 +1,8 @@
+Fotografías de tiendas restauradas con la herramienta integrada de generación de imágenes (IA), a partir de stores-reference.jpg del PDF proporcionado.
+
+Instrucción: restaurar las cuatro fotos pequeñas de fachadas, reducir desenfoque y compresión, preservar composición, arquitectura, perspectiva, colores y rótulos; sin rediseñar las tiendas.
+
+Los detalles reconstruidos pueden variar respecto al original.
+
+PROMPT COMPLETO (herramienta integrada image_gen):
+Edit target: the supplied Decolor/Isaval banner image. Use case: precise-object-edit, conservative image restoration and super-resolution. Restore the FOUR SMALL STOREFRONT PHOTOGRAPHS in the upper-right row, which are heavily blurred and compressed. Produce a high-resolution version of the same full banner, ideally 3444 by 1086 pixels (6x original) with identical aspect ratio and identical relative layout. Preserve all four original store architectures, angles, rooflines, window divisions, colors, and the multicolor DECOLOR signs. Improve natural edge definition, reduce JPEG artifacts, and recover plausible photographic surface texture without changing the buildings, adding windows, moving signs, adding vehicles or people, or inventing architectural features. Do not redesign or replace the stores. Keep all surrounding non-photographic material, logos, text blocks and blue footer in the same positions so the four photographs can be cropped using the original coordinates. The four photos remain exactly the same size relative to the banner and are the only area needing restoration. Prioritize fidelity to each original store over creative detail. No new text, no watermark. Output the restored full banner as one image.
