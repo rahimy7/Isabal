@@ -1,19 +1,23 @@
 LANDING ISAVAL / DECOLOR
 
-Abre index.html en tu navegador o sube el contenido de esta carpeta a tu hosting.
-No requiere instalación ni compilación.
+Abre public/index.html en tu navegador para verla sin servidor.
+No requiere compilación ni dependencias.
 
 Archivos:
-- index.html: estructura y contenido
-- styles.css: diseño y adaptación a móviles, tablets y escritorio
-- app.js: menú móvil, validación y formulario de WhatsApp
-- assets/: imágenes originales extraídas del PDF y favicon
+- public/index.html: estructura y contenido
+- public/styles.css: diseño y adaptación a móviles, tablets y escritorio
+- public/app.js: menú móvil, validación y formulario de WhatsApp
+- public/assets/: imágenes originales extraídas del PDF y favicon
+- server.js: servidor estático para Railway (Node, sin dependencias)
+- package.json, railway.json: configuración de despliegue
+
+Todo lo que esté dentro de public/ se publica. Los archivos .txt de assets/ no se sirven.
 
 CONTACTO
 WhatsApp: +1 849 507 1438
 El formulario abre WhatsApp con nombre, teléfono y correo. El visitante debe enviar el mensaje.
 Los datos no se almacenan en esta web.
-Para cambiar el número, busca 18495071438 en index.html y app.js.
+Para cambiar el número, busca 18495071438 en public/index.html y public/app.js.
 
 TIENDAS
 Los enlaces abren una búsqueda de la sucursal en Google Maps.
@@ -28,6 +32,18 @@ VERIFICACIÓN
 Anchos de 320, 390, 768 y 1440 px sin desbordamiento horizontal.
 Menú móvil, validación, anclas internas y mensaje de WhatsApp comprobados.
 
-PUBLICACIÓN
-La publicación en Sites no pudo realizarse porque la cuenta alcanzó su límite de sitios nuevos.
-Este paquete está listo para subirse a un servicio de hosting estático.
+PRUEBA LOCAL
+npm start  →  http://localhost:3000
+(Para otro puerto en PowerShell: $env:PORT=4173; npm start)
+
+PUBLICACIÓN EN RAILWAY
+1. Sube este repositorio a GitHub.
+2. En Railway: New Project → Deploy from GitHub repo → elige el repositorio.
+   Railway detecta Node, ejecuta "node server.js" y asigna el puerto (variable PORT) solo.
+3. En el servicio: Settings → Networking → Generate Domain para obtener la URL pública.
+   Para un dominio propio, añádelo en la misma sección y crea el registro CNAME que indique Railway.
+Cada push a la rama conectada vuelve a desplegar el sitio.
+No hace falta configurar variables de entorno.
+
+El servidor comprime con Brotli/gzip, añade caché y cabeceras de seguridad (incluida una CSP).
+Si añades scripts, fuentes o imágenes de otro dominio, agrégalo a Content-Security-Policy en server.js; si no, el navegador los bloqueará.
