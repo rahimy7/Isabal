@@ -124,9 +124,17 @@ const server = http.createServer((req, res) => {
   send(req, res, 200, headers, body);
 });
 
+// El proxy de Railway cierra las conexiones inactivas a los 60 s. Node las cierra a los 5 s por defecto,
+// y el proxy puede reutilizar una conexión ya cerrada (error 502). Se mantienen abiertas un poco más que el proxy.
+server.keepAliveTimeout = 65_000;
+server.headersTimeout = 66_000;
+
 server.listen(PORT, () => {
   console.log(`Sirviendo ${files.size} archivos de public/ en el puerto ${PORT}`);
 });
 
-// Railway envía SIGTERM al reemplazar el despliegue.
-process.on('SIGTERM', () => server.close(() => process.exit(0)));
+// Railway envía SIGTERM al reemplazar el despliegue: se dejan terminar las peticiones en curso.
+process.on('SIGTERM', () => {
+  server.close(() => process.exit(0));
+  setTimeout(() => process.exit(0), 10_000).unref();
+});
