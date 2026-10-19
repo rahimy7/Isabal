@@ -8,6 +8,7 @@ Archivos:
 - public/styles.css: diseño y adaptación a móviles, tablets y escritorio
 - public/app.js: menú móvil, validación y formulario de WhatsApp
 - public/assets/: imágenes originales extraídas del PDF y favicon
+- Disenos/: logos y tagline originales de la marca (fuente de los logos de la página)
 - server.js: servidor estático para Railway (Node, sin dependencias)
 - package.json, railway.json: configuración de despliegue
 
@@ -17,15 +18,31 @@ CONTACTO
 WhatsApp: +1 849 507 1438
 El formulario abre WhatsApp con nombre, teléfono y correo. El visitante debe enviar el mensaje.
 Los datos no se almacenan en esta web.
-Para cambiar el número, busca 18495071438 en public/index.html y public/app.js.
+Para cambiar el número, busca 18495071438 en public/index.html y public/app.js, y sube el ?v= de app.js en index.html (ver CACHÉ).
 
 TIENDAS
-Los enlaces abren una búsqueda de la sucursal en Google Maps.
-Bávaro dispone de una consulta directa por WhatsApp.
+Cinco sucursales: Serrallés, Alma Rosa, Santiago, La Romana y Bávaro.
+Las direcciones son las oficiales de nicadom.com/decolor (La Romana, del anuncio de apertura en Instagram @decolorrd).
+Tres direcciones del PDF original no coincidían con las oficiales y se corrigieron: Serrallés, Alma Rosa y Santiago.
+Cada tarjeta abre la ficha de la tienda en Google Maps. Santiago y Bávaro comparten ficha con Nicadom, en el mismo local.
+Bávaro no tiene foto de fachada y muestra el logo de Decolor. Para usar una foto real:
+1. Guarda la imagen en public/assets/ (por ejemplo, store-bavaro.webp, proporción horizontal de 3:2 aprox.).
+2. En index.html, cambia el bloque de la tarjeta 05:
+   <div class="store-photo store-photo-brand"><svg ...>...</svg><span>05</span></div>
+   por:
+   <div class="store-photo"><img src="assets/store-bavaro.webp" alt="Fachada de Decolor Bávaro"><span>05</span></div>
 
 DISEÑO
 Se conservan el azul, los productos, las fotografías de tiendas y los mensajes principales del PDF.
+Los logos son los originales de la carpeta Disenos, convertidos a SVG y colocados en el sprite al inicio de index.html (sin peticiones extra):
+- Isaval (logo-isaval): vectores de "isaval CLARO.pdf". Azul corporativo #2B3E80 sobre blanco; claro #E8ECEE sobre azul.
+- Tagline "Pinta. Protege. Transforma." (tagline-isaval): vectores de "tagline Isaval ES.pdf", en el mismo azul.
+- Decolor (logo-decolor y logo-decolor-nicadom): reconstruido a partir del PNG de 6000 px, con sus 15 colores exactos.
+El color de los logos de Isaval se controla con la propiedad color de CSS (variables --isaval y --isaval-claro en styles.css).
+No apliques la clase "icon" a los logos: añade un trazo que los engrosa.
+El favicon usa la "i" del logo de Isaval.
 La imagen de pinturas del encabezado y las fotografías de las tiendas se restauraron con IA a partir del PDF para mejorar su nitidez. Son reconstrucciones visuales; los detalles pequeños pueden variar respecto al original.
+En la imagen de pinturas se corrigió el nombre del cubo naranja, que la IA había cambiado a "isavermisal": ahora dice "Impermisal", como en el original (detalles en assets/HEADER-IMAGEN.txt).
 Las fuentes Barlow Condensed y DM Sans se cargan desde Google Fonts, con fuentes de respaldo.
 
 VERIFICACIÓN
@@ -35,6 +52,14 @@ Menú móvil, validación, anclas internas y mensaje de WhatsApp comprobados.
 PRUEBA LOCAL
 npm start  →  http://localhost:3000
 (Para otro puerto en PowerShell: $env:PORT=4173; npm start)
+El servidor carga public/ en memoria al arrancar: reinícialo después de cambiar archivos.
+
+CACHÉ
+styles.css, app.js, el favicon y la imagen de pinturas (campaign-enhanced.webp) se piden con ?v=2.
+El servidor guarda CSS y JS en caché del navegador durante una hora y las imágenes durante siete días.
+Al cambiar cualquier archivo de public/ que no sea index.html, sube su número en index.html (?v=3, ?v=4...).
+Si el archivo aún no lleva ?v= (por ejemplo, assets/stores-enhanced.webp), añádele ?v=2.
+Así los visitantes recientes no ven el archivo antiguo junto al HTML nuevo.
 
 PUBLICACIÓN EN RAILWAY
 1. Sube este repositorio a GitHub.
