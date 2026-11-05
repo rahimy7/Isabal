@@ -8,7 +8,7 @@
   <title>Isaval en Decolor · Tu próxima pintura</title>
   <link rel="icon" href="assets/favicon.svg?v=2" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css?v=4">
-  <script src="app.js?v=4" defer></script>
+  <script src="app.js?v=5" defer></script>
 </head>
 <body>
   <svg class="icon-defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
@@ -69,8 +69,8 @@
         <div class="form-panel">
           <h3>Déjanos tus datos</h3>
           <p>Estamos aquí para ayudarte a elegir.</p>
-          <!-- data-endpoint: URL del API que guarda las solicitudes (POST JSON). Vacío = envío simulado. Ver LEEME, BASE DE DATOS. -->
-          <form id="contact-form" data-endpoint="">
+          <!-- data-endpoint: ruta de server.js que guarda las solicitudes en Decolor Pro. Ver LEEME, BASE DE DATOS. -->
+          <form id="contact-form" data-endpoint="/api/leads">
             <label for="name">Nombre completo</label>
             <div class="input-wrap"><svg class="icon" aria-hidden="true"><use href="#icon-user"/></svg><input id="name" name="name" type="text" placeholder="¿Cómo te llamas?" autocomplete="name" minlength="2" maxlength="100" required></div>
             <label for="phone">Teléfono</label>

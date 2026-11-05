@@ -39,17 +39,9 @@ function whatsappUrl(lead) {
 }
 
 // Guarda la solicitud en el endpoint de data-endpoint (formulario en index.html).
-// Mientras esté vacío, el envío se simula: espera un momento y muestra los datos en la consola.
-// Con ?simular-error en la URL, la simulación falla, para probar el mensaje de error.
+// Solo se dan las gracias si el servidor confirma que quedó guardada.
 async function saveLead(lead) {
-  const endpoint = form.dataset.endpoint;
-  if (!endpoint) {
-    await new Promise(resolve => setTimeout(resolve, 900));
-    if (new URLSearchParams(location.search).has('simular-error')) throw new Error('Error simulado');
-    console.info('[Simulación] Solicitud que se guardaría en la base de datos:', lead);
-    return;
-  }
-  const response = await fetch(endpoint, {
+  const response = await fetch(form.dataset.endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify(lead),
@@ -84,9 +76,7 @@ form.addEventListener('submit', async event => {
     phone: phone.value.trim(),
     store: store.value,
     email: form.elements.email.value.trim() || null,
-    source: 'landing-isaval-decolor',
     utm: Object.fromEntries([...new URLSearchParams(location.search)].filter(([key]) => key.startsWith('utm_'))),
-    createdAt: new Date().toISOString(),
   };
 
   formError.hidden = true;

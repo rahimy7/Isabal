@@ -9,7 +9,7 @@ Archivos:
 - public/app.js: menú móvil, validación y envío del formulario (ver BASE DE DATOS)
 - public/assets/: imágenes originales extraídas del PDF y favicon
 - Disenos/: logos y tagline originales de la marca (fuente de los logos de la página)
-- server.js: servidor estático para Railway (Node, sin dependencias)
+- server.js: servidor para Railway (Node, sin dependencias): sirve public/ y recibe el formulario
 - package.json, railway.json: configuración de despliegue
 
 Todo lo que esté dentro de public/ se publica. Los archivos .txt de assets/ no se sirven.
@@ -23,32 +23,25 @@ Si el envío falla, muestra un aviso con WhatsApp como alternativa.
 Para añadir o quitar una tienda del selector, edita las <option> de <select id="store"> en public/index.html.
 Para cambiar el número, busca 18495071438 en public/index.html y public/app.js, y sube el ?v= de app.js en index.html (ver CACHÉ).
 
-BASE DE DATOS
-Por ahora el envío es SIMULADO: espera un segundo, da la solicitud por guardada y muestra los datos en la consola del navegador (F12 → Consola, línea "[Simulación]"). No se guarda nada.
-Para ver el mensaje de error, abre la página con ?simular-error al final de la URL.
+BASE DE DATOS (DECOLOR PRO)
+Las solicitudes se guardan en Decolor Pro (OmniAI, repositorio rahimy7/omnicanal), no en esta web.
+Recorrido: formulario → POST /api/leads de server.js → POST /api/leads de Decolor Pro.
+El navegador solo habla con este dominio; la clave compartida se queda en los servidores.
+El formulario muestra "¡Gracias!" solo si Decolor Pro confirma que guardó la solicitud. Si no, muestra el aviso de error con WhatsApp como alternativa.
 
-Para conectar el endpoint real:
-1. En public/index.html, pon su URL en el atributo data-endpoint del formulario:
-   <form id="contact-form" data-endpoint="https://api.ejemplo.com/leads">
-   No hace falta tocar app.js ni subir su ?v=.
-2. El formulario hace POST con Content-Type: application/json y este cuerpo:
-   {
-     "name": "Ana Pérez",
-     "phone": "809 555 1234",
-     "store": "Santiago · Santiago de los Caballeros",
-     "email": "ana@correo.com",
-     "source": "landing-isaval-decolor",
-     "utm": { "utm_source": "facebook", "utm_campaign": "isaval" },
-     "createdAt": "2026-10-19T18:30:00.000Z"
-   }
-   email es null si no lo escribieron. utm recoge los parámetros utm_ de la URL de la campaña ({} si no hay).
-   createdAt es la hora del navegador del visitante: guarda también la hora del servidor.
-   Cualquier respuesta 2xx cuenta como guardada. Otro código, un fallo de red o 15 s sin respuesta muestran el aviso de error. El cuerpo de la respuesta no se lee.
-3. Si el endpoint está en otro dominio:
-   - Añade el dominio a connect-src en la Content-Security-Policy de server.js, por ejemplo "connect-src 'self' https://api.ejemplo.com". Si no, el navegador bloquea el envío.
-   - El endpoint debe aceptar CORS desde el dominio de la web: responder a OPTIONS y enviar Access-Control-Allow-Origin y Access-Control-Allow-Headers: Content-Type.
-   Si el endpoint está en el mismo dominio (por ejemplo, /api/leads en server.js), no hace falta ninguna de las dos cosas.
-4. Valida los datos también en el servidor: la validación del navegador se puede saltar.
+Variables de entorno de este servicio en Railway:
+- DECOLOR_PRO_URL: dominio público de Decolor Pro: https://decolor.up.railway.app
+- LEADS_API_KEY: la misma clave que LEADS_API_KEY en Decolor Pro. Se genera con: openssl rand -hex 32
+Si falta alguna, el formulario muestra el aviso de error y en Deploy Logs aparece una advertencia.
+
+Dónde se ven: en Decolor Pro → Solicitudes web, con fecha, nombre, teléfono, correo, tienda y campaña, filtros por tienda y fechas, y exportación a Excel.
+Los administradores ven todas; cada agente, las de su tienda (grupos "Tienda X" y "Encargados X").
+También quedan en la ficha del contacto, como "Tienda de preferencia" y "Origen". Si se borra el dato "Origen", la solicitud sale de la vista.
+Si el teléfono ya existe, no se crea otro contacto ni se pisan sus datos: se rellena lo que falta, y un nombre o correo distintos quedan como dato aparte en la ficha.
+Si esa persona escribe después por WhatsApp, Decolor Pro la reconoce por el número.
+
+Límites del servidor: 10 envíos por IP cada 10 minutos, solo JSON, 8 KB como máximo. La tienda debe ser una de las <option> de index.html.
+El servidor no registra los datos del visitante: en Deploy Logs solo aparece el motivo si algo falla.
 
 TIENDAS
 Cinco sucursales: Serrallés, Alma Rosa, Santiago, La Romana y Bávaro.
@@ -77,15 +70,17 @@ Las fuentes Barlow Condensed y DM Sans se cargan desde Google Fonts, con fuentes
 
 VERIFICACIÓN
 Anchos de 320, 390, 768 y 1440 px sin desbordamiento horizontal.
-Menú móvil, validación, anclas internas, envío simulado (correcto y con error) y mensaje de WhatsApp comprobados.
+Menú móvil, validación, anclas internas, envío a Decolor Pro (correcto y con error) y mensaje de WhatsApp comprobados.
 
 PRUEBA LOCAL
 npm start  →  http://localhost:3000
+Sin DECOLOR_PRO_URL y LEADS_API_KEY la página funciona, pero el formulario muestra el aviso de error.
+No las pruebes contra Decolor Pro de producción: cada envío crearía un contacto real.
 (Para otro puerto en PowerShell: $env:PORT=4173; npm start)
 El servidor carga public/ en memoria al arrancar: reinícialo después de cambiar archivos.
 
 CACHÉ
-styles.css y app.js se piden con ?v=4.
+styles.css se pide con ?v=4 y app.js con ?v=5.
 El favicon se pide con ?v=2.
 La imagen de pinturas (campaign-enhanced.webp) se pide con ?v=2.
 El servidor guarda CSS y JS en caché del navegador durante una hora y las imágenes durante siete días.
@@ -102,7 +97,7 @@ El repositorio está en GitHub: github.com/rahimy7/Isabal (rama main).
 4. En el servicio: Settings → Networking → Generate Domain para obtener la URL pública.
    Para un dominio propio, añádelo en la misma sección y crea el registro CNAME que indique Railway.
 Cada push a la rama conectada vuelve a desplegar el sitio.
-No hace falta configurar variables de entorno ni instalar dependencias.
+No hace falta instalar dependencias. Sí hay que configurar DECOLOR_PRO_URL y LEADS_API_KEY (ver BASE DE DATOS).
 
 railway.json: Railway dejará de leer estos archivos ("Config as Code") el 1 de diciembre de 2026, y los servicios nuevos ya no los leen.
 La web no depende de él: con o sin railway.json, Railway la arranca con npm start. Por eso conviene fijar el Healthcheck Path en el panel (paso 3).
@@ -110,7 +105,7 @@ Cuando Railway deje de leerlo, puedes borrar railway.json.
 
 Comprobación tras el despliegue:
 - En Deploy Logs debe aparecer "Sirviendo 8 archivos de public/ en el puerto ...".
-- Abre la URL pública, prueba el formulario (debe mostrar "¡Gracias!"; sin endpoint, el envío es simulado) y los enlaces "Ver ubicación".
+- Abre la URL pública, envía el formulario (debe mostrar "¡Gracias!") y confirma en Decolor Pro → Solicitudes web que apareció. Prueba también los enlaces "Ver ubicación".
 - Si un cambio no se ve, revisa que subiste el ?v= del archivo modificado (ver CACHÉ).
 
 El servidor comprime con Brotli/gzip, añade caché y cabeceras de seguridad (incluida una CSP).
