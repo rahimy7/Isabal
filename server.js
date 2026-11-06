@@ -110,6 +110,8 @@ function rateLimited(ip) {
     return false;
   }
   entry.count += 1;
+  // Una línea por ventana y por IP, sin la IP: lo justo para saber que el límite se alcanzó.
+  if (entry.count === RATE_MAX + 1) console.warn('Solicitud rechazada (429): una IP superó el límite de envíos.');
   return entry.count > RATE_MAX;
 }
 
@@ -147,7 +149,10 @@ async function handleLead(req, res) {
   const json = (status, data, headers = {}) => send(req, res, status, { 'Content-Type': TYPES['.json'], 'Cache-Control': 'no-store', ...headers }, Buffer.from(JSON.stringify(data)));
 
   if (req.method !== 'POST') return json(405, { error: 'Método no permitido' }, { Allow: 'POST' });
-  if (!/^application\/json\b/i.test(req.headers['content-type'] || '')) return json(415, { error: 'Se espera JSON' });
+  if (!/^application\/json\b/i.test(req.headers['content-type'] || '')) {
+    console.warn('Solicitud rechazada (415): no es JSON.');
+    return json(415, { error: 'Se espera JSON' });
+  }
   if (rateLimited(clientIp(req))) return json(429, { error: 'Demasiadas solicitudes' }, { 'Retry-After': String(RATE_WINDOW_MS / 1000) });
   if (!DECOLOR_PRO_URL || !LEADS_API_KEY) {
     console.error('Solicitud rechazada: faltan DECOLOR_PRO_URL o LEADS_API_KEY.');
@@ -158,10 +163,18 @@ async function handleLead(req, res) {
   try {
     lead = cleanLead(JSON.parse(await readBody(req)));
   } catch (error) {
-    if (error instanceof RangeError) return json(413, { error: 'Solicitud demasiado grande' }, { Connection: 'close' });
+    if (error instanceof RangeError) {
+      console.warn('Solicitud rechazada (413): demasiado grande.');
+      return json(413, { error: 'Solicitud demasiado grande' }, { Connection: 'close' });
+    }
+    console.warn('Solicitud rechazada (400): no es un JSON válido.');
     return json(400, { error: 'Solicitud no válida' });
   }
-  if (!lead) return json(400, { error: 'Solicitud no válida' });
+  if (!lead) {
+    // Sin los datos: solo el motivo, para distinguir un bot de un formulario que falla.
+    console.warn('Solicitud rechazada (400): nombre, teléfono o tienda no válidos.');
+    return json(400, { error: 'Solicitud no válida' });
+  }
 
   try {
     const response = await fetch(`${DECOLOR_PRO_URL}/api/leads`, {

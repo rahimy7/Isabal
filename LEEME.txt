@@ -80,7 +80,7 @@ No las pruebes contra Decolor Pro de producción: cada envío crearía un contac
 El servidor carga public/ en memoria al arrancar: reinícialo después de cambiar archivos.
 
 CACHÉ
-styles.css se pide con ?v=4 y app.js con ?v=5.
+styles.css se pide con ?v=4 y app.js con ?v=6.
 El favicon se pide con ?v=2.
 La imagen de pinturas (campaign-enhanced.webp) se pide con ?v=2.
 El servidor guarda CSS y JS en caché del navegador durante una hora y las imágenes durante siete días.

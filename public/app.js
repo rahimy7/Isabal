@@ -40,12 +40,22 @@ function whatsappUrl(lead) {
 
 // Guarda la solicitud en el endpoint de data-endpoint (formulario en index.html).
 // Solo se dan las gracias si el servidor confirma que quedó guardada.
+// AbortSignal.timeout no existe en iPhone con iOS anterior al 16 ni en muchos Android viejos:
+// llamarlo directamente hacía fallar el envío antes de salir del teléfono.
+function timeoutSignal(ms) {
+  if (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) return AbortSignal.timeout(ms);
+  if (typeof AbortController === 'undefined') return undefined;
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), ms);
+  return controller.signal;
+}
+
 async function saveLead(lead) {
   const response = await fetch(form.dataset.endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify(lead),
-    signal: AbortSignal.timeout(15000),
+    signal: timeoutSignal(15000),
   });
   if (!response.ok) throw new Error(`El endpoint respondió ${response.status}`);
 }
